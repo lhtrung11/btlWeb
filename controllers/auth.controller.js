@@ -34,6 +34,7 @@ exports.login = async (req, res, next) => {
                     token,
                     username: user.username,
                     role: user.role,
+                    area: user.area,
                 },
             });
         } else {
