@@ -57,18 +57,27 @@ exports.logout = async (req, res, next) => {
     });
 };
 
+// [GET] TÌM THÔNG TIN NGƯỜI DÙNG HIỆN TẠI
 exports.getCurrentUser = async (req, res, next) => {
     try {
-        const data = { user: null };
+        let document = { account: null, role: null, area: null };
         if (req.user) {
             const user = await User.findById(req.user.userId);
-            data.user = { username: user.username };
+            document = {
+                account: user.username,
+                role: user.role,
+                area: user.area,
+            };
         }
         res.status(200).json({
             status: 'success',
-            data: data,
+            type: 'object',
+            message: 'Cập nhật thông tin người dùng hiện tại thành công',
+            data: {
+                document,
+            },
         });
     } catch (error) {
-        res.json(error);
+        next(error);
     }
 };
