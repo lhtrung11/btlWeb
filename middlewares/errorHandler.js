@@ -11,13 +11,16 @@ exports.errorHandler = (err, req, res, next) => {
     if (err.errors) {
         err.statusCode = 400;
         err.message = [];
+        err.type = 'message';
         for (let p in err.errors) {
             err.message.push(err.errors[p].properties.message);
         }
     }
 
     res.status(err.statusCode).json({
-        status: "fail",
+        status: 'fail',
+        type: err.type,
         message: err.message,
+        data: null,
     });
 };

@@ -1,23 +1,22 @@
-const User = require('../models/User');
-const Area = require('../models/Area');
+const Facility = require('../models/Facility');
 const { dataFilter } = require('../middlewares/dataFilter');
 
-// [POST] TẠO MỘT USER MỚI
-exports.createUser = async (req, res, next) => {
+// [POST] TẠO MỘT CƠ SỞ MỚI MỚI
+exports.createFacility = async (req, res, next) => {
     try {
         const document = dataFilter(req.body, {
-            username: 'string',
-            password: 'string',
-            role: 'string',
-            isActive: 'boolean',
+            name: 'string',
+            contact: 'string',
+            business: 'string',
+            address: 'object',
             area: 'string',
         });
-        const user = await User.create(document);
+        const facility = await Facility.create(document);
         res.status(200).json({
             status: 'success',
             type: 'object',
             message: 'Tạo tài khoản thành công',
-            data: { user },
+            data: { facility },
         });
     } catch (error) {
         next(error);
@@ -102,70 +101,6 @@ exports.deleteUser = async (req, res, next) => {
             status: 'success',
             type: 'message',
             message: 'Xóa dữ liệu thành công',
-            data: null,
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-// [POST] TẠO THÊM KHU VỰC MỚI
-exports.createArea = async (req, res, next) => {
-    try {
-        const document = dataFilter(req.body, { name: 'string' });
-        const area = await Area.create(document);
-        res.status(200).json({
-            status: 'success',
-            type: 'object',
-            message: 'Tạo khu vực thành công',
-            data: { area },
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-// [GET] LẤY TẤT CẢ THÔNG TIN KHU VỰC
-exports.getAllAreas = async (req, res, next) => {
-    try {
-        const areas = await Area.find({});
-        res.status(200).json({
-            status: 'success',
-            type: 'array',
-            length: areas.length,
-            message: 'Lấy thông tin các khu vực thành công',
-            data: { areas },
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-// [GET] LẤY THÔNG TIN KHU VỰC (THEO ID)
-exports.getArea = async (req, res, next) => {
-    try {
-        const { areaId } = req.params;
-        const area = await Area.findById(areaId);
-        res.status(200).json({
-            status: 'success',
-            type: 'object',
-            message: 'Lấy thông tin khu vực thành công',
-            data: { area },
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-// [DELETE] XÓA KHU VỰC (THEO ID)
-exports.deleteArea = async (req, res, next) => {
-    try {
-        const { areaId } = req.params;
-        await Area.findByIdAndDelete(areaId);
-        res.status(200).json({
-            status: 'success',
-            type: 'message',
-            message: 'Xóa khu vực thành công',
             data: null,
         });
     } catch (error) {

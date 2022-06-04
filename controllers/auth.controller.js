@@ -1,26 +1,20 @@
-const User = require("../models/User");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const {
-    removeEmptyValue,
-    removeInvalidKey,
-    correctDataType,
-} = require("../middlewares/dataFilter");
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { dataFilter } = require('../middlewares/dataFilter');
 
+// [POST] ĐĂNG NHẬP
 exports.login = async (req, res, next) => {
     try {
-        let filter = req.body;
-        filter = removeInvalidKey(filter, ["username", "password"]);
-        filter = correctDataType(filter, {
-            username: "string",
-            password: "string",
+        let filter = dataFilter(req.body, {
+            username: 'string',
+            password: 'string',
         });
-        filter = removeEmptyValue(filter);
         const user = await User.findOne({
             username: filter.username,
         });
         if (!user) {
-            const err = new Error("Tên đăng nhập không tồn tại");
+            const err = new Error('Tên đăng nhập không tồn tại');
             err.statusCode = 400;
             return next(err);
         }
@@ -29,12 +23,13 @@ exports.login = async (req, res, next) => {
             bcrypt.compareSync(filter.password, user.password)
         ) {
             const token = jwt.sign(
-                { userId: user._id, role: user.role },
+                { userId: user._id, role: user.role, area: user.area || null },
                 process.env.APP_SECRET
             );
             res.status(200).json({
-                type: "object",
-                message: "Đăng nhập thành công",
+                status: 'success',
+                type: 'object',
+                message: 'Đăng nhập thành công',
                 data: {
                     token,
                     username: user.username,
@@ -42,7 +37,7 @@ exports.login = async (req, res, next) => {
                 },
             });
         } else {
-            const err = new Error("Mật khẩu không đúng");
+            const err = new Error('Mật khẩu không đúng');
             err.statusCode = 400;
             return next(err);
         }
@@ -51,10 +46,13 @@ exports.login = async (req, res, next) => {
     }
 };
 
+// [POST] ĐĂNG XUẤT
 exports.logout = async (req, res, next) => {
     res.status(200).json({
-        type: "message",
-        message: "Đăng xuất thành công",
+        status: 'success',
+        type: 'message',
+        message: 'Đăng xuất thành công',
+        data: null,
     });
 };
 
@@ -66,7 +64,7 @@ exports.getCurrentUser = async (req, res, next) => {
             data.user = { username: user.username };
         }
         res.status(200).json({
-            status: "success",
+            status: 'success',
             data: data,
         });
     } catch (error) {
