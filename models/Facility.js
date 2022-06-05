@@ -13,23 +13,8 @@ const facilitySchema = new mongoose.Schema({
         required: [true, 'Cơ sở này không thuộc về khu vực nào'],
     },
     address: {
-        type: {
-            ward: {
-                type: String,
-                required: [true, 'Xã/Phường chưa có'],
-                default: 'Chưa có',
-            },
-            street: {
-                type: String,
-                required: [true, 'Tên đường chưa có'],
-                default: 'Chưa có',
-            },
-            detail: {
-                type: String,
-                trim: true,
-                default: 'Chưa có',
-            },
-        },
+        type: String,
+        required: [true, 'Thiếu địa chỉ cơ sở'],
     },
     contact: {
         type: String,

@@ -32,9 +32,10 @@ exports.getAllUsers = async (req, res, next) => {
             isActive: 'boolean',
             area: 'string',
         });
-        const users = await User.find(query);
+        const users = await User.find(query).sort({ username: 1 });
         if (users.length !== 0) {
             res.status(200).json({
+                status: 'success',
                 type: 'array',
                 message: 'Lấy dữ liệu thành công',
                 length: users.length,
@@ -42,6 +43,7 @@ exports.getAllUsers = async (req, res, next) => {
             });
         } else {
             res.status(200).json({
+                status: 'success',
                 type: 'message',
                 message: 'Không có dữ liệu phù hợp',
                 data: null,
@@ -128,7 +130,7 @@ exports.createArea = async (req, res, next) => {
 // [GET] LẤY TẤT CẢ THÔNG TIN KHU VỰC
 exports.getAllAreas = async (req, res, next) => {
     try {
-        const areas = await Area.find({});
+        const areas = await Area.find({}).sort({ name: 1, isManaged: 1 });
         res.status(200).json({
             status: 'success',
             type: 'array',

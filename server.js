@@ -1,16 +1,16 @@
 //dotenv
-require("dotenv").config();
+require('dotenv').config();
 
 // Connect DB
-const { connectDB } = require("./configs/db");
+const { connectDB } = require('./configs/db');
 connectDB();
 
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const cors = require('cors');
 
-const route = require("./routers");
+const route = require('./routers');
 
-const { errorHandler } = require("./middlewares/errorHandler");
+const { errorHandler } = require('./middlewares/errorHandler');
 
 const app = express();
 

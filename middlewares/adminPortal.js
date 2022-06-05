@@ -1,4 +1,4 @@
-exports.adminAuth = (req, res, next) => {
+exports.adminPortal = (req, res, next) => {
     if (req.user.role !== 'admin') {
         const err = new Error('Chỉ quản trị viên được truy cập vào đây');
         err.statusCode = 401;

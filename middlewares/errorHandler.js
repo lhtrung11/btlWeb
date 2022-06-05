@@ -3,6 +3,7 @@ exports.errorHandler = (err, req, res, next) => {
 
     if (err.code === 11000) {
         err.statusCode = 400;
+        err.type = 'message';
         for (let p in err.keyValue) {
             err.message = `${p} bị trùng`;
         }
@@ -11,14 +12,14 @@ exports.errorHandler = (err, req, res, next) => {
     if (err.errors) {
         err.statusCode = 400;
         err.message = [];
-        err.type = 'message';
+        err.type = 'array';
         for (let p in err.errors) {
             err.message.push(err.errors[p].properties.message);
         }
     }
 
     res.status(err.statusCode).json({
-        status: 'fail',
+        status: 'error',
         type: err.type,
         message: err.message,
         data: null,
