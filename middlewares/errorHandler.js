@@ -10,6 +10,7 @@ exports.errorHandler = (err, req, res, next) => {
     }
 
     if (err.errors) {
+        console.log(err.errors);
         err.statusCode = 400;
         err.message = [];
         err.type = 'array';

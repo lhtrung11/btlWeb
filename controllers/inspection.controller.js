@@ -1,25 +1,25 @@
-const Facility = require('../models/Facility');
+const Inspection = require('../models/Inspection');
 const { dataFilter } = require('../middlewares/dataFilter');
 const { checkPermission } = require('../middlewares/checkPermission');
 
-// [POST] TẠO MỘT CƠ SỞ MỚI MỚI
-exports.createFacility = async (req, res, next) => {
+// [POST] TẠO MỘT ĐỢT THANH TRA MỚI
+exports.createInspection = async (req, res, next) => {
     try {
-        const document = dataFilter(req.body, {
-            name: 'string',
-            contact: 'string',
-            business: 'string',
-            address: 'object',
-            area: 'string',
-            license: 'object',
-        });
-        const facility = await Facility.create(document);
-        console.log(facility);
+        const document = {
+            ...req.body,
+            status: {
+                isComplete: false,
+            },
+            task: {
+                visitFacility: false,
+            },
+        };
+        const inspection = await Inspection.create(document);
         res.status(200).json({
             status: 'success',
             type: 'object',
-            message: 'Tạo cơ sở mới thành công',
-            data: { facility },
+            message: 'Tạo đợt thanh tra mới thành công',
+            data: { inspection },
         });
     } catch (error) {
         next(error);
