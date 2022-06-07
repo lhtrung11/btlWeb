@@ -62,12 +62,13 @@ exports.getCurrentUser = async (req, res, next) => {
     try {
         let document = { account: null, role: null, area: null };
         if (req.user) {
-            const user = await User.findById(req.user.userId);
+            const user = await User.findById(req.user.userId).populate('area');
             document = {
                 account: user.username,
                 role: user.role,
                 area: user.area,
             };
+            console.log(document);
         }
         res.status(200).json({
             status: 'success',

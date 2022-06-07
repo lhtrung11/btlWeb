@@ -86,7 +86,9 @@ exports.getAllInspections = async (req, res, next) => {
 exports.getInspection = async (req, res, next) => {
     try {
         const { inspectionId } = req.params;
-        let inspection = await Inspection.findById(inspectionId);
+        let inspection = await Inspection.findById(inspectionId).populate(
+            'area facility'
+        );
         if (!checkPermission(req.user, inspection.area)) {
             inspection = {};
         }
