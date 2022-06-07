@@ -60,6 +60,7 @@ exports.getUser = async (req, res, next) => {
         const { userId } = req.params;
         const filter = 'username role isActive area';
         const user = await User.findById(userId, filter);
+        console.log(user);
         res.status(200).json({
             status: 'success',
             type: 'object',

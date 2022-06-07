@@ -14,7 +14,6 @@ exports.createFacility = async (req, res, next) => {
             license: 'object',
         });
         const facility = await Facility.create(document);
-        console.log(facility);
         res.status(200).json({
             status: 'success',
             type: 'object',
@@ -31,9 +30,8 @@ exports.getAllFacilities = async (req, res, next) => {
     try {
         const query = dataFilter(req.query, {
             area: 'string',
-            name: 'string',
             business: 'string',
-            license: 'boolean',
+            license: 'object',
         });
         let facilities;
         if (checkPermission(req.user, query.area)) {
