@@ -87,6 +87,7 @@ exports.updateFacility = async (req, res, next) => {
             business: 'string',
             address: 'string',
             contact: 'string',
+            license: 'object'
         });
         let facility = await Facility.findById(facilityId);
         if (checkPermission(req.user, facility.area)) {
