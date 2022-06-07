@@ -66,7 +66,7 @@ exports.getCurrentUser = async (req, res, next) => {
             document = {
                 account: user.username,
                 role: user.role,
-                area: user.area,
+                area: user.area._id,
             };
             console.log(document);
         }

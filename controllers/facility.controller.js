@@ -5,14 +5,25 @@ const { checkPermission } = require('../middlewares/checkPermission');
 // [POST] TẠO MỘT CƠ SỞ MỚI MỚI
 exports.createFacility = async (req, res, next) => {
     try {
-        const document = dataFilter(req.body, {
-            name: 'string',
-            contact: 'string',
-            business: 'string',
-            address: 'object',
-            area: 'string',
-            license: 'object',
-        });
+        const { role, area } = req.user;
+        let document;
+        if (role === 'admin' || area) {
+            document = dataFilter(
+                { ...req.body, area: area || req.body.area },
+                {
+                    name: 'string',
+                    contact: 'string',
+                    business: 'string',
+                    address: 'object',
+                    area: 'string',
+                    license: 'object',
+                }
+            );
+        } else {
+            const err = new Error('Không đủ quyền hạn để tạo ra đơn vị mới');
+            err.statusCode = 400;
+            return next(err);
+        }
         const facility = await Facility.create(document);
         res.status(200).json({
             status: 'success',
@@ -28,18 +39,24 @@ exports.createFacility = async (req, res, next) => {
 // [GET] LẤY TẤT CẢ THÔNG TIN CƠ SỞ (CÓ QUERY)
 exports.getAllFacilities = async (req, res, next) => {
     try {
-        const query = dataFilter(req.query, {
-            area: 'string',
-            business: 'string',
-            license: 'object',
-        });
+        const { area, role } = req.user;
+        const query = dataFilter(
+            { ...req.query, area: role === 'admin' ? '' : area },
+            {
+                area: 'string',
+                business: 'string',
+                license: 'object',
+            }
+        );
         let facilities;
-        if (checkPermission(req.user, query.area)) {
+        if (role === 'admin' || area) {
             facilities = await Facility.find(query).populate('area');
         } else {
-            facilities = [];
+            const err = new Error('Không đủ quyền hạn để xem thông tin này');
+            err.statusCode = 400;
+            return next(err);
         }
-
+        console.log(req.user);
         if (facilities.length !== 0) {
             res.status(200).json({
                 type: 'array',
