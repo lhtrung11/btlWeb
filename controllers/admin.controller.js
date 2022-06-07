@@ -84,6 +84,19 @@ exports.updateUser = async (req, res, next) => {
             new: true,
             runValidators: true,
         }).select(filter);
+        if (user.area) {
+            const area = await Area.findByIdAndUpdate(
+                area,
+                {
+                    isManaged: true,
+                    $push: { managers: userId },
+                },
+                {
+                    new: true,
+                    runValidators: true,
+                }
+            );
+        }
         res.status(200).json({
             status: 'success',
             type: 'object',
