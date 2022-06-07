@@ -14,7 +14,6 @@ exports.createFacility = async (req, res, next) => {
             license: 'object',
         });
         const facility = await Facility.create(document);
-        console.log(facility);
         res.status(200).json({
             status: 'success',
             type: 'object',

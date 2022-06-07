@@ -6,6 +6,7 @@ Router.route('/').post(facility.createFacility).get(facility.getAllFacilities);
 Router.route('/:facilityId')
     .put(facility.updateFacility)
     .get(facility.getFacility)
-    .delete(facility.deleteFacility);
+    .delete(facility.deleteFacility)
+    .patch(facility.updateLicense);
 
 module.exports = Router;
