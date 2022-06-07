@@ -56,7 +56,9 @@ exports.getAllInspections = async (req, res, next) => {
         });
         let inspections;
         if (checkPermission(req.user, query.area)) {
-            inspections = await Inspection.find(query);
+            inspections = await Inspection.find(query).populate(
+                'area facility'
+            );
         } else {
             inspections = [];
         }

@@ -63,7 +63,7 @@ exports.getAllFacilities = async (req, res, next) => {
 exports.getFacility = async (req, res, next) => {
     try {
         const { facilityId } = req.params;
-        let facility = await Facility.findById(facilityId);
+        let facility = await Facility.findById(facilityId).populate('area');
         if (!checkPermission(req.user, facility.area)) {
             facility = {};
         }
@@ -87,7 +87,7 @@ exports.updateFacility = async (req, res, next) => {
             business: 'string',
             address: 'string',
             contact: 'string',
-            license: 'object'
+            license: 'object',
         });
         let facility = await Facility.findById(facilityId);
         if (checkPermission(req.user, facility.area)) {
