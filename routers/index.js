@@ -2,6 +2,7 @@ const adminRoute = require('./admin.route');
 const authRoute = require('./auth.route');
 const facilityRoute = require('./facility.route');
 const inspectionRoute = require('./inspection.route');
+const publicRoute = require('./public.route');
 const { verifyToken } = require('../middlewares/verifyToken');
 const { adminPortal } = require('../middlewares/adminPortal');
 
@@ -9,7 +10,8 @@ route = (app) => {
     app.use('/admin', verifyToken, adminPortal, adminRoute);
     app.use('/auth', authRoute);
     app.use('/facilities', facilityRoute);
-    // app.use("/inspections", )
+    app.use('/inspections', inspectionRoute);
+    app.use('/public', publicRoute);
     app.all('*', (req, res, next) => {
         const err = new Error('API này không tồn tại');
         err.statusCode = 404;

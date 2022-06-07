@@ -59,8 +59,7 @@ exports.getUser = async (req, res, next) => {
     try {
         const { userId } = req.params;
         const filter = 'username role isActive area';
-        const user = await User.findById(userId, filter);
-        console.log(user);
+        const user = await User.findById(userId, filter).populate('area');
         res.status(200).json({
             status: 'success',
             type: 'object',

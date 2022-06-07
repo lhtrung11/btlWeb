@@ -1,54 +1,72 @@
 const Inspection = require('../models/Inspection');
+const Facility = require('../models/Facility');
 const { dataFilter } = require('../middlewares/dataFilter');
 const { checkPermission } = require('../middlewares/checkPermission');
 
 // [POST] TẠO MỘT ĐỢT THANH TRA MỚI
 exports.createInspection = async (req, res, next) => {
     try {
-        const document = {
-            ...req.body,
-            status: {
-                isComplete: false,
-            },
-            task: {
-                visitFacility: false,
-            },
-        };
-        const inspection = await Inspection.create(document);
-        res.status(200).json({
-            status: 'success',
-            type: 'object',
-            message: 'Tạo đợt thanh tra mới thành công',
-            data: { inspection },
-        });
+        const { area, role } = req.user;
+        if (role === 'admin' || area) {
+            const facility = await Facility.findById(req.body.facility);
+            if (checkPermission(req.user, facility.area)) {
+                const document = {
+                    ...req.body,
+                    status: {
+                        isComplete: false,
+                    },
+                    tasks: {
+                        visitFacility: false,
+                    },
+                };
+                const inspection = await Inspection.create(document);
+                res.status(200).json({
+                    status: 'success',
+                    type: 'object',
+                    message: 'Tạo đợt thanh tra mới thành công',
+                    data: { inspection },
+                });
+            } else {
+                res.status(200).json({
+                    status: 'success',
+                    type: 'message',
+                    message:
+                        'Không có đủ quyền để tạo đơn thanh tra cho đối tượng này',
+                    data: null,
+                });
+            }
+        } else {
+            const err = new Error('Không đủ quyền hạn để tạo đợt thanh tra');
+            err.statusCode = 400;
+            return next(err);
+        }
     } catch (error) {
         next(error);
     }
 };
 
-// [GET] LẤY TẤT CẢ THÔNG TIN CƠ SỞ (CÓ QUERY)
-exports.getAllFacilities = async (req, res, next) => {
+// [GET] LẤY TẤT CẢ THÔNG TIN THANH TRA (CÓ QUERY)
+exports.getAllInspections = async (req, res, next) => {
     try {
         const query = dataFilter(req.query, {
             area: 'string',
-            ward: 'string',
-            name: 'string',
-            business: 'string',
-            license: 'boolean',
+            facility: 'string',
+            status: 'object',
+            from: 'object',
         });
-        let facilities;
+        let inspections;
         if (checkPermission(req.user, query.area)) {
-            facilities = await Facility.find(query);
+            inspections = await Inspection.find(query);
         } else {
-            facilities = [];
+            inspections = [];
         }
 
-        if (facilities.length !== 0) {
+        if (inspections.length !== 0) {
             res.status(200).json({
                 type: 'array',
                 message: 'Lấy dữ liệu thành công',
-                length: facilities.length,
-                data: { facilities },
+                length: inspections.length,
+                data: { inspections },
             });
         } else {
             res.status(200).json({
@@ -62,46 +80,44 @@ exports.getAllFacilities = async (req, res, next) => {
     }
 };
 
-// [GET] LẤY THÔNG TIN CƠ SỞ (THEO ID)
-exports.getFacility = async (req, res, next) => {
+// [GET] LẤY THÔNG TIN THANH TRA (THEO ID)
+exports.getInspection = async (req, res, next) => {
     try {
-        const { facilityId } = req.params;
-        let facility = await Facility.findById(facilityId);
-        if (!checkPermission(req.user, facility.area)) {
-            facility = {};
+        const { inspectionId } = req.params;
+        let inspection = await Inspection.findById(inspectionId);
+        if (!checkPermission(req.user, inspection.area)) {
+            inspection = {};
         }
         res.status(200).json({
             status: 'success',
             type: 'object',
             message: 'Lấy dữ liệu thành công',
-            data: { facility },
+            data: { inspection },
         });
     } catch (error) {
         next(error);
     }
 };
 
-// [PUT] CẬP NHẬT THÔNG TIN CƠ SỞ (THEO ID)
-exports.updateFacility = async (req, res, next) => {
+// [PUT] CẬP NHẬT THÔNG TIN THANH TRA (THEO ID)
+exports.updateInspection = async (req, res, next) => {
     try {
-        const { facilityId } = req.params;
+        const { inspectionId } = req.params;
         const document = dataFilter(req.body, {
-            name: 'string',
-            business: 'string',
-            address: 'string',
-            contact: 'string',
+            status: 'object',
+            tasks: 'object',
         });
-        let facility = await Facility.findById(facilityId);
-        if (checkPermission(req.user, facility.area)) {
-            facility = await Facility.findByIdAndUpdate(facilityId, document, {
-                new: true,
-                runValidators: true,
-            });
+        let inspection = await Inspection.findById(inspectionId);
+        if (checkPermission(req.user, inspection.area)) {
+            inspection = await Inspection.findByIdAndUpdate(
+                inspectionId,
+                document
+            );
             res.status(200).json({
                 status: 'success',
                 type: 'object',
-                message: 'Cập nhật dữ liệu thành công',
-                data: { facility },
+                message: 'Cập nhật thông tin thanh tra thành công',
+                data: { inspection },
             });
         } else {
             res.status(200).json({
@@ -116,61 +132,61 @@ exports.updateFacility = async (req, res, next) => {
     }
 };
 
-// [PATCH] CẬP NHẬT GIẤY CHỨNG NHẬN (THEO ID)
-exports.updateLicense = async (req, res, next) => {
-    try {
-        const { facilityId } = req.params;
-        const document = dataFilter(req.body, {
-            business: 'string',
-            issueDate: 'date',
-            expireDate: 'date',
-            isActive: 'boolean',
-        });
-        const filter = 'license';
-        let facility = await Facility.findById(facilityId);
-        if (checkPermission(req.user, facility.area)) {
-            facility = await Facility.findByIdAndUpdate(
-                facilityId,
-                { license: document },
-                {
-                    new: true,
-                    runValidators: true,
-                }
-            ).select(filter);
-            res.status(200).json({
-                status: 'success',
-                type: 'object',
-                message: 'Cập nhật giấy chứng nhận thành công',
-                data: { facility },
-            });
-        }
-    } catch (error) {
-        next(error);
-    }
-};
+// // [PATCH] CẬP NHẬT GIẤY CHỨNG NHẬN (THEO ID)
+// exports.updateLicense = async (req, res, next) => {
+//     try {
+//         const { facilityId } = req.params;
+//         const document = dataFilter(req.body, {
+//             business: 'string',
+//             issueDate: 'date',
+//             expireDate: 'date',
+//             isActive: 'boolean',
+//         });
+//         const filter = 'license';
+//         let facility = await Facility.findById(facilityId);
+//         if (checkPermission(req.user, facility.area)) {
+//             facility = await Facility.findByIdAndUpdate(
+//                 facilityId,
+//                 { license: document },
+//                 {
+//                     new: true,
+//                     runValidators: true,
+//                 }
+//             ).select(filter);
+//             res.status(200).json({
+//                 status: 'success',
+//                 type: 'object',
+//                 message: 'Cập nhật giấy chứng nhận thành công',
+//                 data: { facility },
+//             });
+//         }
+//     } catch (error) {
+//         next(error);
+//     }
+// };
 
-// [DELETE] XÓA THÔNG TIN CƠ SỞ (THEO ID)
-exports.deleteFacility = async (req, res, next) => {
-    try {
-        const { facilityId } = req.params;
-        let facility = await Facility.findById(facilityId);
-        if (checkPermission(req.user, facility.area)) {
-            await Facility.findByIdAndDelete(facilityId);
-            res.status(200).json({
-                status: 'success',
-                type: 'message',
-                message: 'Xóa dữ liệu cơ sở thành công',
-                data: null,
-            });
-        } else {
-            res.status(200).json({
-                status: 'success',
-                type: 'message',
-                message: 'Không có đủ quyền để xóa đối tượng này',
-                data: null,
-            });
-        }
-    } catch (error) {
-        next(error);
-    }
-};
+// // [DELETE] XÓA THÔNG TIN CƠ SỞ (THEO ID)
+// exports.deleteFacility = async (req, res, next) => {
+//     try {
+//         const { facilityId } = req.params;
+//         let facility = await Facility.findById(facilityId);
+//         if (checkPermission(req.user, facility.area)) {
+//             await Facility.findByIdAndDelete(facilityId);
+//             res.status(200).json({
+//                 status: 'success',
+//                 type: 'message',
+//                 message: 'Xóa dữ liệu cơ sở thành công',
+//                 data: null,
+//             });
+//         } else {
+//             res.status(200).json({
+//                 status: 'success',
+//                 type: 'message',
+//                 message: 'Không có đủ quyền để xóa đối tượng này',
+//                 data: null,
+//             });
+//         }
+//     } catch (error) {
+//         next(error);
+//     }
+// };
