@@ -30,14 +30,12 @@ exports.getAllFacilities = async (req, res, next) => {
     try {
         const query = dataFilter(req.query, {
             area: 'string',
-            ward: 'string',
-            name: 'string',
             business: 'string',
-            license: 'boolean',
+            license: 'object',
         });
         let facilities;
         if (checkPermission(req.user, query.area)) {
-            facilities = await Facility.find(query);
+            facilities = await Facility.find(query).populate('area');
         } else {
             facilities = [];
         }
@@ -65,7 +63,7 @@ exports.getAllFacilities = async (req, res, next) => {
 exports.getFacility = async (req, res, next) => {
     try {
         const { facilityId } = req.params;
-        let facility = await Facility.findById(facilityId);
+        let facility = await Facility.findById(facilityId).populate('area');
         if (!checkPermission(req.user, facility.area)) {
             facility = {};
         }
@@ -89,6 +87,7 @@ exports.updateFacility = async (req, res, next) => {
             business: 'string',
             address: 'string',
             contact: 'string',
+            license: 'object',
         });
         let facility = await Facility.findById(facilityId);
         if (checkPermission(req.user, facility.area)) {
@@ -169,6 +168,51 @@ exports.deleteFacility = async (req, res, next) => {
                 data: null,
             });
         }
+    } catch (error) {
+        next(error);
+    }
+};
+
+// [GET] LẤY THÔNG TIN TẤT CẢ CƠ SỞ (MIỄN PHÍ)
+exports.getAllFacilitiesFree = async (req, res, next) => {
+    try {
+        const query = dataFilter(req.query, {
+            area: 'string',
+            name: 'string',
+            business: 'string',
+            license: 'boolean',
+        });
+        const facilities = await Facility.find(query).populate('area');
+        if (facilities.length !== 0) {
+            res.status(200).json({
+                type: 'array',
+                message: 'Lấy dữ liệu thành công',
+                length: facilities.length,
+                data: { facilities },
+            });
+        } else {
+            res.status(200).json({
+                type: 'message',
+                message: 'Không có dữ liệu phù hợp',
+                data: null,
+            });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+// [GET] LẤY THÔNG TIN CƠ SỞ (MIỄN PHÍ)
+exports.getFacilityFree = async (req, res, next) => {
+    try {
+        const { facilityId } = req.params;
+        let facility = await Facility.findById(facilityId);
+        res.status(200).json({
+            status: 'success',
+            type: 'object',
+            message: 'Lấy dữ liệu thành công',
+            data: { facility },
+        });
     } catch (error) {
         next(error);
     }
